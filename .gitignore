@@ -1,0 +1,11 @@
+# ===== 第三方工具本体（官方 releases 可下，REV-MATRIX.md 已记录来源，勿入库）=====
+tools/
+
+# ===== 逆向目标与解包产物（版权物，输入哈希已锁定在 claims 报告里）=====
+projects/*/base.apk
+projects/*/extracted/
+
+# ===== 未修复生产系统的漏洞细节（等责任方修复+授权后再考虑公开）=====
+projects/water_elec/artex_report_task1.md
+projects/water_elec/artex_concl_task1.txt
+projects/water_elec/scripts/_artex_create_task.py

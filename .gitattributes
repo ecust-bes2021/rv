@@ -1,0 +1,2 @@
+# shell 脚本必须在 WSL bash 里执行，CRLF 会导致 "\r command not found"
+*.sh text eol=lf

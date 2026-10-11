@@ -1,0 +1,354 @@
+{
+  "schema_version": "triage-finding/v0",
+  "repository": {
+    "path": "D:\\gitfiles\\rv"
+  },
+  "findings": [
+    {
+      "triage_item_id": "triage-001",
+      "input_id": "user-001",
+      "source_type": "freeform",
+      "title": "客户端凭据可读取是否可绕过业务接口",
+      "normalized_input": {
+        "vulnerable_component": "AndroidManifest.xml、移动推送 SDK、Adapay assets",
+        "claimed_source": "获得发布 APK 的用户",
+        "claimed_sink": "使用客户端配置绕过业务 API 身份鉴权",
+        "claimed_control": "服务端是否把 SDK 配置当业务身份凭据，未知",
+        "affected_version_or_path": "water_elec/base.apk; com.hetfield.william.hetfield 6.0.2",
+        "preconditions": [
+          "相应值仍有效",
+          "业务或供应商服务授予其敏感权限"
+        ],
+        "impact": "未授权访问业务或供应商服务",
+        "references": [
+          "https://help.aliyun.com/zh/document_detail/434660.html"
+        ]
+      },
+      "verdict": "needs_review",
+      "confidence": "low",
+      "affected_locations": [
+        {
+          "label": "decoded manifest",
+          "path": "water_elec/base.apk!AndroidManifest.xml",
+          "lines": "unknown",
+          "detail": "com.alibaba.app.appkey 与 com.alibaba.app.appsecret 存在非空明文字面量；值已脱敏"
+        },
+        {
+          "label": "push initialization",
+          "path": "water_elec/base.apk!com.hetfield.william.MyApplication#registerPush",
+          "lines": "unknown",
+          "detail": "CloudPushService.register 调用，表明客户端集成阿里移动推送"
+        },
+        {
+          "label": "Adapay assets",
+          "path": "water_elec/base.apk!assets/adapay_addr.json",
+          "lines": "unknown",
+          "detail": "34 项地区结构，包含 value/title/cities 字段"
+        },
+        {
+          "label": "Adapay assets",
+          "path": "water_elec/base.apk!assets/adapay_bank.json",
+          "lines": "unknown",
+          "detail": "5260 项银行代码到字符串的映射；该文件不构成商户凭据已泄露的证据"
+        }
+      ],
+      "reachable_path": [
+        "APK 获得者可以读取 Manifest 中的配置",
+        "客户端初始化 CloudPushService",
+        "业务服务的身份及权限控制未知"
+      ],
+      "boundary_assessment": {
+        "product_surface": "hosted service",
+        "source_trust": "untrusted",
+        "boundary_crossed": null,
+        "policy_basis": "未发现适用 SECURITY.md；用户声明维护方及演练用途；仅 APK 和静态分析产物，部署及服务端权限事实未知"
+      },
+      "exploitability_stack_rank": {
+        "rank_queue": "needs_review",
+        "rank": 1,
+        "rationale": "按静态证据质量及可达性线索排序；该顺序不是已证实的风险评级",
+        "drivers": [
+          "APK 可读取程度",
+          "客户端路径证据",
+          "缺失的服务端或设备权限控制"
+        ]
+      },
+      "evidence": [
+        "已验证 APK SHA-256: 8ac00460259abb7a619f0bb3acdfa00ac621273854011ed03501064fc8e9cc6c",
+        "REA 缓存包检查与实际 APK 哈希一致；manifest status=complete",
+        "appkey 为 8 字符、appsecret 为 32 字符的非空字面量；未保留值",
+        "registerPush 静态证据 ev_ef283d86a800fd05a1af5f723f2f91f85baee8e54301654849a6fe17796b01ff",
+        "选定 DEX/文本资产中未发现 PEM 私钥标记；检查不能覆盖所有编码或动态配置"
+      ],
+      "counterevidence": [
+        "阿里官方 Android 移动推送文档描述了这两个 Manifest 字段；不能将它们自动视为业务 API 或支付商户密钥",
+        "已检查的 Adapay assets 为地区和银行字典，未证明包含商户私钥"
+      ],
+      "proof_gaps": [
+        "没有业务 API 鉴权实现、EMAS 权限及密钥有效性配置",
+        "Adapay 配置其他存储、编码与运行时下发路径未完整覆盖",
+        "未证明 SDK 配置能获得业务账户权限"
+      ],
+      "recommended_next_step": "维护方核对 EMAS 配置用途与权限，以及业务鉴权是否与 SDK 凭据隔离；若确定授予敏感权限，再评估轮换与权限收缩",
+      "fix_finding_handoff": null
+    },
+    {
+      "triage_item_id": "triage-002",
+      "input_id": "user-002",
+      "source_type": "freeform",
+      "title": "改价接口管理员鉴权与对象权限校验",
+      "normalized_input": {
+        "vulnerable_component": "MeterInfo 与服务端改价 API（未提供）",
+        "claimed_source": "可能提交电价或房间标识的低权限账户",
+        "claimed_sink": "越权修改其他房间电价",
+        "claimed_control": "管理员角色、租户及房间授权控制，未知",
+        "affected_version_or_path": "water_elec/base.apk; com.hetfield.william.hetfield 6.0.2",
+        "preconditions": [
+          "存在可调用改价接口",
+          "低权限用户可以访问该接口",
+          "服务端权限或对象绑定无效"
+        ],
+        "impact": "未授权更改费率",
+        "references": []
+      },
+      "verdict": "needs_review",
+      "confidence": "low",
+      "affected_locations": [
+        {
+          "label": "client model",
+          "path": "water_elec/base.apk!com.hetfield.william.entity.MeterInfo",
+          "lines": "unknown",
+          "detail": "Price、PriceID、PriceName 字段及访问器存在；这是客户端数据结构"
+        }
+      ],
+      "reachable_path": [
+        "客户端电表模型包含费率数据",
+        "服务端写入及授权路径未知"
+      ],
+      "boundary_assessment": {
+        "product_surface": "hosted service",
+        "source_trust": "untrusted",
+        "boundary_crossed": null,
+        "policy_basis": "未发现适用 SECURITY.md；用户声明维护方及演练用途；仅 APK 和静态分析产物，部署及服务端权限事实未知"
+      },
+      "exploitability_stack_rank": {
+        "rank_queue": "needs_review",
+        "rank": 3,
+        "rationale": "按静态证据质量及可达性线索排序；该顺序不是已证实的风险评级",
+        "drivers": [
+          "APK 可读取程度",
+          "客户端路径证据",
+          "缺失的服务端或设备权限控制"
+        ]
+      },
+      "evidence": [
+        "MeterInfo 静态证据 ev_99879fb9686b27a205514845e1766c80922db42347073c8abcedcb62beaac028 与 APK 哈希一致",
+        "观察到 Price、PriceID、PriceName 和 UserID 等模型字段"
+      ],
+      "counterevidence": [
+        "模型 setter 和字段可见性无法证明服务端缺少角色或对象权限校验"
+      ],
+      "proof_gaps": [
+        "没有改价处理器、认证中间件、租户/房间授权代码",
+        "没有具有隔离角色与测试房间的测试环境"
+      ],
+      "recommended_next_step": "审查服务端改价处理器及其对象级授权控制；在隔离环境以测试角色核对授权不变量",
+      "fix_finding_handoff": null
+    },
+    {
+      "triage_item_id": "triage-003",
+      "input_id": "user-003",
+      "source_type": "freeform",
+      "title": "支付金额权威来源与支付平台回调验签",
+      "normalized_input": {
+        "vulnerable_component": "RechargeRmbActivity、WXPayEntryActivity 与服务端订单/回调处理器（未提供）",
+        "claimed_source": "客户端支付参数或外部支付通知",
+        "claimed_sink": "错误金额结算或未支付余额入账",
+        "claimed_control": "服务端金额计算、回调验签、订单匹配、幂等控制，未知",
+        "affected_version_or_path": "water_elec/base.apk; com.hetfield.william.hetfield 6.0.2",
+        "preconditions": [
+          "服务端信任客户端金额或未经认证的通知",
+          "通知能触发实际记账"
+        ],
+        "impact": "错误记账及财务损失",
+        "references": []
+      },
+      "verdict": "needs_review",
+      "confidence": "low",
+      "affected_locations": [
+        {
+          "label": "payment page",
+          "path": "water_elec/base.apk!com.hetfield.william.hetfield.RechargeRmbActivity#initView",
+          "lines": "unknown",
+          "detail": "启用 WebView JavaScript 并从 Intent 获取 URL；远端页面实现未提供"
+        },
+        {
+          "label": "client result",
+          "path": "water_elec/base.apk!com.hetfield.william.hetfield.RechargeRmbActivity#onActivityResult",
+          "lines": "unknown",
+          "detail": "接收成功结果后返回并关闭页面；该方法未包含服务端记账证明"
+        },
+        {
+          "label": "SDK callback",
+          "path": "water_elec/base.apk!com.hetfield.william.hetfield.wxapi.WXPayEntryActivity#onResp",
+          "lines": "unknown",
+          "detail": "微信支付成功响应设置客户端成功状态并结束页面"
+        }
+      ],
+      "reachable_path": [
+        "客户端打开支付页面",
+        "支付 SDK 回调影响客户端状态",
+        "账务处理的服务端路径未知"
+      ],
+      "boundary_assessment": {
+        "product_surface": "hosted service",
+        "source_trust": "untrusted",
+        "boundary_crossed": null,
+        "policy_basis": "未发现适用 SECURITY.md；用户声明维护方及演练用途；仅 APK 和静态分析产物，部署及服务端权限事实未知"
+      },
+      "exploitability_stack_rank": {
+        "rank_queue": "needs_review",
+        "rank": 2,
+        "rationale": "按静态证据质量及可达性线索排序；该顺序不是已证实的风险评级",
+        "drivers": [
+          "APK 可读取程度",
+          "客户端路径证据",
+          "缺失的服务端或设备权限控制"
+        ]
+      },
+      "evidence": [
+        "initView 证据 ev_15f9c779a346bf367450500a67a1ace698d9a52cb4e9bd7a93be5f1becf76433",
+        "onActivityResult 证据 ev_deddd81856faae5cdcc96665fde326d0218e64c6a7c511016832c922da60702d",
+        "onResp 证据 ev_9a82a91c27667b342f35007bdda1281b178090d72f3e5e51b3488abb81d4db59；三个新结果的 APK 哈希均一致"
+      ],
+      "counterevidence": [
+        "Android SDK 客户端回调与支付平台到服务端的通知是不同路径；客户端成功状态不能单独证明已入账"
+      ],
+      "proof_gaps": [
+        "远端支付页面、订单创建与金额计算代码缺失",
+        "Adapay 服务端回调验签、订单绑定、幂等和对账实现缺失",
+        "客户端成功标记的后续消费者未完整追踪，未证明其具有最终记账权限"
+      ],
+      "recommended_next_step": "审查服务端订单创建、金额/币种绑定、支付回调验签、订单状态转换及幂等入账代码",
+      "fix_finding_handoff": null
+    },
+    {
+      "triage_item_id": "triage-004",
+      "input_id": "user-004",
+      "source_type": "freeform",
+      "title": "电表余额写入管理员密钥泄露及命令认证",
+      "normalized_input": {
+        "vulnerable_component": "libLockCore.so、TTLock SDK 与电表/服务端（未提供）",
+        "claimed_source": "APK 获得者或能影响通信的用户",
+        "claimed_sink": "未授权写入电表余额",
+        "claimed_control": "管理员密钥存储、传输及设备命令认证，未知",
+        "affected_version_or_path": "water_elec/base.apk; com.hetfield.william.hetfield 6.0.2",
+        "preconditions": [
+          "管理员密钥可由低权限来源获得",
+          "设备接受其作为写余额权限凭据",
+          "没有其他有效授权或重放防护"
+        ],
+        "impact": "未授权改变设备计费状态",
+        "references": []
+      },
+      "verdict": "needs_review",
+      "confidence": "low",
+      "affected_locations": [
+        {
+          "label": "native encoding",
+          "path": "water_elec/base.apk!lib/arm64-v8a/libLockCore.so",
+          "lines": "unknown",
+          "detail": "JNI encodeWithEncrypt 的匹配缓存反编译结果包含 XOR 运算和全局表引用；未输出表内容"
+        }
+      ],
+      "reachable_path": [
+        "客户端含 native 编解码函数",
+        "观察到 XOR 及全局表引用",
+        "管理员密钥来源、完整通信加密及设备授权路径未知"
+      ],
+      "boundary_assessment": {
+        "product_surface": "library API",
+        "source_trust": "untrusted",
+        "boundary_crossed": null,
+        "policy_basis": "未发现适用 SECURITY.md；用户声明维护方及演练用途；仅 APK 和静态分析产物，部署及服务端权限事实未知"
+      },
+      "exploitability_stack_rank": {
+        "rank_queue": "needs_review",
+        "rank": 4,
+        "rationale": "按静态证据质量及可达性线索排序；该顺序不是已证实的风险评级",
+        "drivers": [
+          "APK 可读取程度",
+          "客户端路径证据",
+          "缺失的服务端或设备权限控制"
+        ]
+      },
+      "evidence": [
+        "缓存 native 分析的 SHA-256 与 APK 内 arm64-v8a/libLockCore.so 成员一致",
+        "encodeWithEncrypt 证据 ev_69c6d985e962acf2dd796fe043394e9c3a9f6f6983404ef64429691310975101",
+        "Manifest 声明 usesCleartextTraffic=true 并引用 network_security_config；未解析该配置，未据此确认具体连接使用明文"
+      ],
+      "counterevidence": [
+        "编解码函数中存在 XOR 不代表整个协议仅使用 XOR；其他加密、密钥和设备授权步骤未覆盖",
+        "读取固定表不等于获得设备管理员密钥"
+      ],
+      "proof_gaps": [
+        "缺少管理员密钥生命周期、配对/授权代码及设备端认证实现",
+        "未证明余额操作必经该函数或明文网络",
+        "没有隔离测试电表与运行时通信证据"
+      ],
+      "recommended_next_step": "维护方审查密钥分发与存储、设备命令认证以及重放防护；使用测试电表核实设备授权不变量",
+      "fix_finding_handoff": null
+    },
+    {
+      "triage_item_id": "triage-005",
+      "input_id": "user-005",
+      "source_type": "freeform",
+      "title": "管理后台弱口令、多因素认证与会话过期",
+      "normalized_input": {
+        "vulnerable_component": "管理后台（未提供）",
+        "claimed_source": "访问后台登录入口的用户",
+        "claimed_sink": "未授权管理账户访问或持久会话滥用",
+        "claimed_control": "密码策略、多因素认证、登录限制、会话有效期及撤销，未知",
+        "affected_version_or_path": "water_elec/base.apk; com.hetfield.william.hetfield 6.0.2",
+        "preconditions": [
+          "相关后台存在并可访问",
+          "登录或会话控制薄弱"
+        ],
+        "impact": "管理账户被接管",
+        "references": []
+      },
+      "verdict": "needs_review",
+      "confidence": "low",
+      "affected_locations": [],
+      "reachable_path": [
+        "没有后台代码、身份系统配置或授权测试环境"
+      ],
+      "boundary_assessment": {
+        "product_surface": "hosted service",
+        "source_trust": "untrusted",
+        "boundary_crossed": null,
+        "policy_basis": "未发现适用 SECURITY.md；用户声明维护方及演练用途；仅 APK 和静态分析产物，部署及服务端权限事实未知"
+      },
+      "exploitability_stack_rank": {
+        "rank_queue": "needs_review",
+        "rank": 5,
+        "rationale": "按静态证据质量及可达性线索排序；该顺序不是已证实的风险评级",
+        "drivers": [
+          "APK 可读取程度",
+          "客户端路径证据",
+          "缺失的服务端或设备权限控制"
+        ]
+      },
+      "evidence": [
+        "本次输入只包含 APK 及客户端分析产物；没有服务器代码或测试后台"
+      ],
+      "counterevidence": [],
+      "proof_gaps": [
+        "后台身份系统、密码策略、多因素认证配置和会话存储未提供",
+        "未检查真实账户密码，未执行登录或会话测试"
+      ],
+      "recommended_next_step": "审查管理后台身份配置与会话生命周期；使用隔离环境中的测试管理账户验证",
+      "fix_finding_handoff": null
+    }
+  ]
+}
