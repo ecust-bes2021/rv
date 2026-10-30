@@ -9,3 +9,19 @@ projects/*/extracted/
 projects/water_elec/artex_report_task1.md
 projects/water_elec/artex_concl_task1.txt
 projects/water_elec/scripts/_artex_create_task.py
+
+# ===== ltetool：第三方版权二进制 / 反汇编过程产物（源码与结论文档保留）=====
+# OSS Nokalva 试用版 SDK 本体（原版权物，可重装）
+projects/ltetool/ossasn1/win32.trial/12.1.0/
+# 补丁交付物（修改过的版权二进制，仅本地保存）
+projects/ltetool/release/
+# lock1：work/ 为 exe 副本，out/ 为反汇编过程 dump；test/ 测试用例源码保留
+projects/ltetool/lock1_asn1exe/work/
+projects/ltetool/lock1_asn1exe/out/
+# trial_test：仅排除编译产物，main*.c / minitest.* / out/*.c / *.md 保留
+projects/ltetool/trial_test/*.obj
+projects/ltetool/trial_test/*.exe
+projects/ltetool/trial_test/patch/
+
+# ===== 本地 IDE 配置 =====
+.vscode/

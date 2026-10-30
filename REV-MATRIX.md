@@ -42,8 +42,11 @@ d:\gitfiles\rv\                       # 工作区根
 ├── scripts\                          # 跨项目通用脚本（吃参数，不绑项目）
 │   ├── rea\                          #   _rea_extract.py / _rea_extract2.py（rea JSON 结果提取器）
 │   └── artex\                        #   _artex_status.py（任务状态/frontier/findings 查询，改 TID 换任务）
+├── RESEARCH-LOG.md                   # 外部项目研究索引（研究过哪些外部项目、结论与产物链接）
 └── projects\                         # ★ 一项目一文件夹，产物互不混杂
     ├── _template\                    #   新项目脚手架：README.md 项目卡 + claims-template.md 疑点模板
+    ├── d2r-mobile-review\            #   已研究：d2r-mobile（Switch→iOS 兼容层），经验清单见其 lessons.md
+    ├── cpa-workbuddy-plugin\         #   已研究：CPA 插件集（AI 账号池/协议逆向样本），浅克隆不含 release-assets
     └── water_elec\                   #   案例：水电租赁 APK
         ├── base.apk / extracted\     #     目标 APK 与解包产物
         ├── apk-five-claims.md / .json #     静态五项疑点报告

@@ -1,0 +1,8 @@
+Minitest DEFINITIONS ::= BEGIN
+
+    TestSeq ::= SEQUENCE {
+        id      INTEGER (0..65535),
+        name    VisibleString (SIZE(1..32)) OPTIONAL
+    }
+
+END
